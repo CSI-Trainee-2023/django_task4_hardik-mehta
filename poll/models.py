@@ -16,6 +16,20 @@ class Question(baseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE , related_name="questions")
     questions_text = models.CharField(max_length=100)
 
+    def calculate_percentage(self):
+        answer = self.answer.all()
+        total_votes =0
+        for answer in answer:
+            total_votes += answer.counter
+
+        payload = []
+        for answer in  answer :
+            payload.append(int((answer.counter / total_votes)* 100))
+
+        return payload 
+
+        #formula = C/V * 100
+
     def __str__(self) -> str:
         return self.questions_text
 

@@ -1,10 +1,34 @@
 from tkinter.messagebox import QUESTION
 from django.shortcuts import redirect, render
 from poll.admin import QuestionAdmin
-
-from poll.models import Question
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from poll.models import Answer, Question
 
 # Create your views here.
+@api_view(['POST'])
+def save_question_result(request):
+    data = request.data
+    question_uid =data.get('question_uid')
+    answer_uid =data.get('answer_uid')
+
+    if question_uid is None and answer_uid is None:
+        payload = {'data ': 'Both qusetion and answer uid are required', 'status' : False}
+
+        return Response()
+
+    question_obj = Question.objects.get(uid = question_uid)
+    answer_obj = Answer.objects.get(uid = answer_uid)
+    answer_obj.counter += 1
+    answer_obj.save()
+
+    payload = {'data ': question_obj.calculate_percentage, 'status' : True}
+
+
+    return Response(payload)
+
+
+
 def question_detail(request , question_uid):
     try:
         question_obj = Question.objects.get(uid = question_uid)
