@@ -16,7 +16,7 @@
           <input type="checkbox" name="poll" id="opt-4">
 
           {% for answer in question.answer.all %}
-          <label for="opt-{{forloop.counter}}" class="opt-{{forloop.counter}}">
+          <label for="opt-{{forloop.counter}}" data-answer="{{answer.uid}}" class="opt-{{forloop.counter}}">
             <div class="row">
               <div class="column">
                 <span class="circle"></span>
@@ -32,10 +32,49 @@
         </div>
       </div>
       <script>
+      
+
+     async function call_api(question_uid,answer_uid){
+        
+  const rawResponse = await fetch('/api/save_question_result/', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify
+    ({
+      question_uid: question_uid, 
+      answer_uid: answer_uid
+    })
+  }).then(result => result.json())
+  .then(data => {
+    console.log(data)
+
+  
+    var elements = document.querySelectorAll('.percent')
+    var progress = document.querySelectorAll('.progress')
+    for(var i =0;i<elements.lenghts;i++){
+      elements[i].textContent = data.data[i]
+      progress[i].style = `--w:${data.data[i]};`
+    }
+  })
+  //const content = await rawResponse.json();
+
+  //console.log(content);
+
+
+      }
+
         const options = document.querySelectorAll("label");
+        var answer_uid = null
+        var question_uid = "{{question_uid}}"
 for (let i = 0; i < options.length; i++) {
   options[i].addEventListener("click", ()=>{
     for (let j = 0; j < options.length; j++) {
+      answer_uid = options[i].dataset.answer
+      //console.log(answer_uid)
       if(options[j].classList.contains("selected")){
         options[j].classList.remove("selected");
       }
@@ -67,6 +106,8 @@ for (let i = 0; i < options.length; i++) {
         options[m].removeAttribute("class");
       }
     }
+    call_api(question_uid , answer_uid)
+    console.log(answer_uid)
   });
 }
       </script>
